@@ -1,12 +1,9 @@
-import os
+'''Main entry point for Inventry app'''
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from redis_om import get_redis_connection, HashModel
-from redis_om.model.model import NotFoundError
+from fastapi.responses import RedirectResponse
 
-from dotenv import load_dotenv
-load_dotenv()
-
+from routers.product import router as productRouter
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware,
@@ -15,56 +12,10 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=['*'])
 
 
-redis = get_redis_connection(
-    host=os.environ['REDIS_HOST'],
-    port=os.environ['REDIS_PORT'],
-    password=os.environ['REDIS_PSW'],
-    decode_responses=True)
+app.include_router(productRouter)
 
 
-class Product(HashModel):
-    name: str
-    price: float
-    quantity: int
-
-    class Meta():
-        database = redis
-
-
-@ app.get('/')
+@ app.get('/', response_class=RedirectResponse, status_code=302)
 def hello():
-    return {"message": "hello"}
-
-
-def format(pk: str):
-    try:
-        product = Product.get(pk)
-        return {
-            'id': product.pk,
-            'name': product.name,
-            'price': product.price,
-            'quantity': product.quantity
-        }
-    except NotFoundError:
-        return {"message": "Product not found"}
-
-
-@ app.get('/products')
-def getAllProducts():
-    return [format(pk) for pk in Product.all_pks()]
-
-
-@ app.get('/products/{pk}')
-def getSingleProduct(pk: str):
-    return format(pk)
-
-
-@ app.post('/products')
-def createProduct(product: Product):
-    product.save()
-    return format(product.pk)
-
-
-@ app.delete('/products/{pk}')
-def deleteProduct(pk: str):
-    return Product.delete(pk)
+    '''Redirects root requests to Swagger doc'''
+    return RedirectResponse('/docs')
