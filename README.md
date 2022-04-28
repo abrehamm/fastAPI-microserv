@@ -1,3 +1,4 @@
+![Tests](https://github.com/abrehamm/fastAPI-microserv/actions/workflows/tests.yml/badge.svg)
 ![Pylint](https://github.com/abrehamm/fastAPI-microserv/actions/workflows/pylint.yml/badge.svg)
 
 ## Learning basics of Microservices
